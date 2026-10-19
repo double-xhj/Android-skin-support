@@ -29,7 +29,16 @@ public class SkinPreference {
 
     private SkinPreference(Context applicationContext) {
         mApp = applicationContext;
-        mPref = mApp.getSharedPreferences(mApp.getPackageName() + FILE_NAME, Context.MODE_PRIVATE);
+        SharedPreferences mPref;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { // API 24
+            Context deviceContext = mApp.createDeviceProtectedStorageContext();
+            String spName = mApp.getPackageName() + FILE_NAME;
+            mPref = deviceContext.getSharedPreferences(spName, Context.MODE_PRIVATE);
+            // 用完关闭 DE Context，建议放在 finally，如果你后续不再持有 deviceContext
+            deviceContext.close();
+        } else {
+            mPref = mApp.getSharedPreferences(mApp.getPackageName() + FILE_NAME, Context.MODE_PRIVATE);
+        }
         mEditor = mPref.edit();
     }
 
